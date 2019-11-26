@@ -16,13 +16,15 @@ namespace SOHandling
         private const uint ExceptionStackOverflow = 0xc00000fd;
         private const uint Err = 0xf00000fd;
 
+        private static readonly PVECTORED_EXCEPTION_HANDLER HandlerDelegate = Handler;
+
         public static void HandleSO(Action action)
             => HandleSO<object>(() => { action(); return null; });
         
         public static unsafe T HandleSO<T>(Func<T> action)
         {
             var exc = false;
-            var handler = Kernel32.AddVectoredExceptionHandler(IntPtr.Zero, Handler);
+            var handler = Kernel32.AddVectoredExceptionHandler(IntPtr.Zero, HandlerDelegate);
             
             if (handler == IntPtr.Zero)
                 throw new Win32Exception("AddVectoredExceptionHandler failed");
